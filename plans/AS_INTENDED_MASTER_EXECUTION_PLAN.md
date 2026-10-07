@@ -71,6 +71,58 @@ Acceptance:
 - build authorization is evidence-based
 - unresolved rule conflict blocks implementation
 
+## P-00.04 — Official Airwallex feasibility dossier
+**Status:** DONE
+
+Scope:
+- Research sandbox architecture, base URL, and auth protocol from official Airwallex docs
+- Survey required V1 endpoint families (auth, balances, global accounts, beneficiaries, transfers, status simulation)
+- Document request_id semantics, 7-day retention, and why idempotency != economic exposure protection
+- Document transfer lifecycle, late failure after PAID, and simulation capabilities
+- Contrast scope against Payment Ops Incident Commander starter kit
+- Document open feasibility gates (corridor, currency, schema, method) as DESIGN / DOCS_ONLY
+- No API calls; no runtime dependencies
+
+## P-00.05 — Financial threat model
+**Status:** DONE
+
+Scope:
+- Model 22 financial and operational threat/failure classes
+- Define assets/invariants at risk, failure paths, deterministic controls, required evidence, and fail-closed behaviors
+- Map threats to planned mitigation phases
+- Explicitly cover model authority hallucination, stale mandates, beneficiary substitution, exposure leaks, and simulation masquerade
+- No code
+
+## P-00.06 — Demo evidence & proof plan
+**Status:** DONE
+
+Scope:
+- Design evidence chains for flagship demo Story A (Ambiguous execution under response loss) and Story B (Revocable assurance under late settlement failure)
+- Define user-visible indicators, deterministic engine state, evidence classes (DESIGN, TEST, SANDBOX_LIVE, SIMULATED)
+- Require explicit visual badging for simulated response drops
+- Map expected fields against Decision/Execution Record schema
+- No code
+
+## P-00.07 — Sandbox / zero-spend readiness checklist
+**Status:** DONE
+
+Scope:
+- Define pre-build operator readiness checks (HackerEarth, sandbox readiness, $0 spend boundary)
+- Establish build-unfreeze day checklist gated by P-00.03
+- Define secret-handling protocol (backend-only, .env ignored, redacting logger, zero browser/prompt leaks)
+- Define cost-stop conditions ($0 personal spend, no PAYG fallback, no card commitments)
+- No login or API calls
+
+## P-00.08 — Pre-build architecture decision register
+**Status:** DONE
+
+Scope:
+- Record 15 LOCKED non-negotiable architectural and financial decisions
+- Record 9 OPEN feasibility decisions deferred until live sandbox evidence
+- Define required evidence, earliest task, and unverified assumptions for each open item
+- Preserve Intent → Authority → Reality mental model and single-agent direction
+- No code
+
 ---
 
 # PHASE P-01 — Airwallex Sandbox Feasibility
