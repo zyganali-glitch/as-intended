@@ -1,0 +1,55 @@
+# Demo Evidence & Proof Plan
+
+**Classification:** DESIGN / DOCS_ONLY  
+**Status:** Pre-Build Verification Plan — No Implementation Code  
+**Created:** 2026-10-07  
+**Guiding Principle:** Simulation is explicitly badged; real Airwallex sandbox mutations are independently verified; assurance is revocable.
+
+---
+
+## 1. Flagship Demo Story A: Ambiguous Execution Under Response Loss
+
+### Objective
+Demonstrate that when a transfer mutation experiences client-side timeout or lost HTTP response, As Intended refuses to retry blindly with a fresh request ID. Instead, it locks economic exposure, enters `QUARANTINE`, conducts deliberate read-back from Airwallex, recovers the actual financial outcome, and prevents duplicate payout.
+
+### Step-by-Step Evidence Chain
+
+| Step # | Lifecycle Stage | What User Sees | Deterministic State in Engine | Evidence Class | Real Sandbox vs Simulated | Prohibited Misleading Presentation | Decision / Execution Record Fields |
+| :---: | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **A-1** | **Intent Registration** | Supplier obligation card: e.g. "Acme Europe Invoice #1042: EUR 4,500.00 due". | `Obligation` created with status `UNSATISFIED`. Amount: 4500.00, Currency: EUR. | `DESIGN` / `TEST` | Local deterministic state. No provider call. | Must NOT imply funds are already committed or transferred. | `obligation_id`, `intent.business_obligation`, `intent.beneficiary`, `intent.amount`, `intent.currency` |
+| **A-2** | **Authority Bounding** | Mandate verification badge: "Mandate M-2026-088 active. Max limit EUR 5,000.00. Expiry: +24h". | `Mandate` validated; `valid_until > utcnow()`; counterparty matches; amount within limit. | `TEST` | Local deterministic rule validation. | Must NOT generate authority from free-form LLM prose. | `authority.mandate_id`, `authority.validity`, `authority.constraints`, `authority.maximum_unresolved_exposure` |
+| **A-3** | **Durable Reservation** | Balance check: "Reserving EUR 4,500.00 from demo wallet prior to dispatch". | SQLite row committed: `Reservation` marked `ACTIVE`. Wallet reserve floor decremented locally. | `TEST` | Local durable database commit. | Must NOT dispatch network request before reservation is written to disk. | `exposure.unresolved_economic_exposure: 4500.00`, `exposure.exposure_lock_status: LOCKED` |
+| **A-4** | **Sandbox Mutation Dispatch** | Status badge: "Dispatching transfer to Airwallex Sandbox...". | `ExecutionAttempt` record created with unique `attempt_id` and idempotent `request_id`. HTTP POST sent. | `SANDBOX_LIVE` | **REAL SANDBOX MUTATION**: Actual POST sent to Airwallex sandbox transfer endpoint. | Must NOT use fake mock if labeled as sandbox execution. | `attempt_id`, `request_id`, `provider_object: transfer` |
+| **A-5** | **Simulated Response Loss** | Visual warning banner: `[SIMULATED CLIENT RESPONSE LOSS]` — "HTTP connection dropped before response received". | Client connection drops or times out after server receives payload. Engine detects missing response. | `SIMULATED` | **SIMULATED FAULT**: Client network timeout injected at HTTP client transport layer. Sandbox mutation actually succeeded on provider side. | Must NOT conceal simulation. Banner MUST clearly say `SIMULATED CLIENT RESPONSE LOSS`. | `evidence_class: SIMULATED`, `reality.normalized_state: UNCERTAIN` |
+| **A-6** | **Economic Exposure Quarantine** | Flashing amber card: `QUARANTINE — UNRESOLVED EXPOSURE EUR 4,500.00`. "Automatic retries blocked to protect capital". | `EconomicExposure` = EUR 4,500.00. `Obligation.status` = `QUARANTINED`. Recovery gate = `BLOCKED`. | `TEST` / `DESIGN` | Deterministic state machine lock. No retry request dispatched. | Must NOT permit automated retry with a new `request_id`. | `exposure.unresolved_economic_exposure: 4500.00`, `recovery.recovery_currently_allowed: false`, `recovery.deterministic_reason: UNRESOLVED_EXPOSURE_IN_QUARANTINE` |
+| **A-7** | **Independent Airwallex Read-Back** | Reconciliation activity stream: "Polling Airwallex endpoint: `GET /api/v1/pa/transfers?request_id=...`". | Outbound GET request with auth token queries transfer status by `request_id`. | `SANDBOX_LIVE` | **REAL SANDBOX READ-BACK**: Live GET request to Airwallex sandbox read API. | Must NOT read from stale local cache; must poll live provider. | `reality.provider_object: transfer`, `reality.evidence_source: AIRWALLEX_SANDBOX_READBACK`, `reality.observed_at: <ISO8601>` |
+| **A-8** | **Reconciliation & Exposure Resolution** | Audit event: "Transfer found on Airwallex (`id: tr_...`, status: `PROCESSING`/`PAID`). Reality matches Intent." | Engine parses provider response. `ExecutionAttempt` updated to provider transfer ID. Unresolved exposure resolved. | `SANDBOX_LIVE` | Real response parsed into deterministic domain model. | Must NOT declare business complete if counterparty or amount does not match. | `reality.normalized_state: PAID`, `exposure.unresolved_economic_exposure: 0.00`, `assurance.current_assurance: SATISFIED` |
+| **A-9** | **Assurance Granted (No Duplicate Outflow)** | Final green card: "Assurance Confirmed: Obligation Satisfied. Duplicate payment prevented: 0 extra cents dispatched." | `Obligation.status` = `SATISFIED`. `ExecutionRecord` sealed with audit trail. | `SANDBOX_LIVE` | Live state confirmed via verified read-back. | Must NOT claim assurance without linking to provider observation ID and timestamp. | `assurance.current_assurance: SATISFIED`, `assurance.freshness: FRESH`, `evidence_class: SANDBOX_LIVE` |
+
+---
+
+## 2. Flagship Demo Story B: Revocable Assurance Under Late Settlement Failure
+
+### Objective
+Demonstrate that assurance is never permanent or blind. When a transfer initially appears completed (`PAID`), but the provider later reports rejection/failure (e.g. simulated recipient bank rejection in Airwallex sandbox), As Intended immediately revokes assurance, reopens the obligation, blocks unsafe retries, and permits recovery only under strict valid mandate terms.
+
+### Step-by-Step Evidence Chain
+
+| Step # | Lifecycle Stage | What User Sees | Deterministic State in Engine | Evidence Class | Real Sandbox vs Simulated | Prohibited Misleading Presentation | Decision / Execution Record Fields |
+| :---: | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **B-1** | **Initial Satisfied Assurance** | Green dashboard status: "Obligation EUR 3,000.00 — SATISFIED (Observed $T_0$, Provider Status: `PAID`)". | `Obligation.status` = `SATISFIED`. `AssuranceState.current_assurance` = `SATISFIED`. | `SANDBOX_LIVE` | Real transfer completed in sandbox to status `PAID`. | Must NOT present status as irrevocable or permanent. | `assurance.current_assurance: SATISFIED`, `assurance.prior_assurance: null`, `assurance.revoked: false` |
+| **B-2** | **Provider Status Mutation** | Test trigger button: "Trigger Provider Status Transition to FAILED in Airwallex Sandbox". | Call to Airwallex Sandbox Transition API: `POST /api/v1/pa/transfers/{id}/simulate_status_transition` with `next_status: FAILED`. | `SANDBOX_LIVE` | **REAL SANDBOX SIMULATION API**: Uses official Airwallex sandbox transition API to alter rail state. | Must NOT simulate this locally in memory if Airwallex sandbox API supports it. | `reality.provider_object: transfer`, `reality.normalized_state: FAILED` |
+| **B-3** | **Fresh Read-Back Observation** | Reconciliation badge: "Periodic read-back detects contradictory evidence at $T_1$! Provider status: `FAILED`". | Polling cycle retrieves fresh payload. `observed_at` > previous timestamp. State mismatch detected: `FAILED` != `PAID`. | `SANDBOX_LIVE` | Live GET query returning fresh provider status. | Must NOT suppress contradictory evidence to maintain green UI. | `reality.observed_at: <T1>`, `reality.evidence_freshness: FRESH`, `reality.normalized_state: FAILED` |
+| **B-4** | **Assurance Revocation** | Red warning banner: `ASSURANCE REVOKED` — "Transfer returned by banking network. Reason: Account invalid." | `AssuranceState.revoked` = `true`. `Obligation.status` downgraded from `SATISFIED` to `REOPENED_UNSATISFIED`. | `SANDBOX_LIVE` | Deterministic revocation triggered by live provider evidence. | Must NOT leave obligation in satisfied state once fresh evidence contradicts. | `assurance.current_assurance: REVOKED`, `assurance.prior_assurance: SATISFIED`, `assurance.revoked: true`, `assurance.contradiction_reason: PROVIDER_STATUS_FAILED_AFTER_PAID` |
+| **B-5** | **Economic Exposure Recalculation** | Exposure card: "Unresolved Exposure: EUR 0.00 (funds returned/cancelled). Mandate re-evaluation required." | Economic exposure released back to zero because provider confirmed transfer cancellation/failure. | `TEST` / `SANDBOX_LIVE` | Deterministic exposure calculation. | Must NOT open a new transfer while prior exposure status is unverified. | `exposure.unresolved_economic_exposure: 0.00`, `exposure.exposure_lock_status: UNLOCKED` |
+| **B-6** | **Recovery Gate Evaluation** | Recovery inspection panel: "Recovery Decision: PERMITTED (Prior exposure clear, Mandate M-2026-092 valid for 18h)". | `RecoveryDecision` evaluates: 1. Prior exposure safe? YES. 2. Original mandate valid? YES. 3. Retry count <= limit? YES. | `TEST` | Deterministic rules engine decision. | Must NOT allow recovery if mandate is expired or counterparty was altered. | `recovery.recovery_currently_allowed: true`, `recovery.deterministic_reason: PRIOR_EXPOSURE_CLEARED_AND_MANDATE_VALID` |
+| **B-7** | **Operator Recovery Authorization** | Operator button: "Execute Approved Recovery Payout with Corrected Routing". | New execution attempt initialized under original mandate with clean exposure reservation. | `DESIGN` / `SANDBOX_LIVE` | Real recovery execution under bounded mandate. | Must NOT auto-dispatch recovery without operator mandate validity. | `record_id: rec_recovery_01`, `authority.recovery_permission: GRANTED` |
+
+---
+
+## 3. Prohibited Misleading Presentations (Strict Disclaimers)
+
+1. **No Synthetic Sandbox Masquerade:** A local Python mock must never be captioned in the UI as "Airwallex Sandbox Live Response". Any mock must be clearly tagged `TEST / MOCK`.
+2. **Explicit Simulation Badges:** In Story A, step A-5 must prominently display `[SIMULATED CLIENT RESPONSE LOSS]`.
+3. **No Phantom Settlement:** The application UI must not present a transfer as "Settled / Final" when provider state is `PROCESSING` or `SENT`.
+4. **Honest Timing:** When polling read-back takes seconds or minutes, the UI must display active polling progress rather than fabricating an instantaneous confirmation.
