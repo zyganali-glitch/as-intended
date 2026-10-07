@@ -14,14 +14,14 @@
 | **A-1** | **HackerEarth Registration** | Registration submitted and confirmed on platform. | CONFIRMED | [X] |
 | **A-2** | **Idea Submission Published** | Title: "As Intended — Financial Execution Assurance for Autonomous Finance" published. | CONFIRMED | [X] |
 | **A-3** | **Repository Initialization** | Canonical repository `zyganali-glitch/as-intended` active on branch `main` with verified governance. | CONFIRMED | [X] |
-| **A-4** | **Airwallex Sandbox Account Readiness** | Operator has registered for free developer sandbox on Airwallex web app; credentials ready. | READY | [X] |
-| **A-5** | **No Production Account Dependency** | Project architecture explicitly forbids production Airwallex account or credentials. | ENFORCED | [X] |
-| **A-6** | **Zero Real Money Movement** | System design uses synthetic sandbox balances only; zero actual financial settlement rails. | ENFORCED | [X] |
-| **A-7** | **No PAYG Cloud Accounts** | No AWS/GCP/Azure pay-as-you-go infrastructure connected; local process execution only. | ENFORCED | [X] |
-| **A-8** | **No Card or Deposit Commitments** | Operator personal credit cards or bank deposits are completely detached from project. | ENFORCED | [X] |
-| **A-9** | **Secret-Storage Plan Defined** | Backend-only `.env` template defined, `.gitignore` confirmed active. | CONFIGURED | [X] |
-| **A-10** | **Local Ollama Fallback Ready** | Local LLM runtime available for offline, zero-cost prompt interpretation. | AVAILABLE | [X] |
-| **A-11** | **Partner Credits Inactive Until Observed** | Hackathon-provided LLM/cloud credits treated as unavailable until physically verified in dashboard. | ENFORCED | [X] |
+| **A-4** | **Airwallex Sandbox Account Readiness** | Operator has registered for free developer sandbox on Airwallex web app; credentials ready. | PENDING OPERATOR VERIFICATION | [ ] |
+| **A-5** | **No Production Account Dependency** | Project architecture explicitly forbids production Airwallex account or credentials. | POLICY ENFORCED | [X] |
+| **A-6** | **Zero Real Money Movement** | System design uses synthetic sandbox balances only; zero actual financial settlement rails. | POLICY ENFORCED | [X] |
+| **A-7** | **No PAYG Cloud Accounts** | No AWS/GCP/Azure pay-as-you-go infrastructure connected; local process execution only. | POLICY ENFORCED / PENDING OPERATOR VERIFICATION | [ ] |
+| **A-8** | **No Card or Deposit Commitments** | Operator personal credit cards or bank deposits are completely detached from project. | POLICY ENFORCED / PENDING OPERATOR VERIFICATION | [ ] |
+| **A-9** | **Secret-Storage Plan Defined** | Backend-only `.env` template defined, `.gitignore` confirmed active; local `.env` configuration pending. | POLICY ENFORCED / PENDING OPERATOR SETUP | [ ] |
+| **A-10** | **Local Ollama Fallback Ready** | Local LLM runtime available for offline, zero-cost prompt interpretation. | PENDING OPERATOR VERIFICATION | [ ] |
+| **A-11** | **Partner Credits Inactive Until Observed** | Hackathon-provided LLM/cloud credits treated as unavailable until physically verified in dashboard. | POLICY ENFORCED | [X] |
 
 ---
 
@@ -38,14 +38,14 @@
 - [ ] **Step 3: Verify Remote `main` Baseline**
   - Run `git fetch origin main` and confirm HEAD matches the last independently VERIFIED SHA.
 - [ ] **Step 4: Verify Airwallex Sandbox Account Accessibility**
-  - Operator logs in manually to `api-demo.airwallex.com` dashboard in browser.
-  - Verify sandbox dashboard is operational and synthetic funds are visible.
+  - Operator logs in manually to Airwallex sandbox web app / account in browser.
+  - Verify sandbox account is operational and synthetic funds are visible.
 - [ ] **Step 5: Verify Local Sandbox API Credentials**
   - Confirm `.env` exists locally containing `AIRWALLEX_CLIENT_ID` and `AIRWALLEX_API_KEY`.
   - Confirm `.env` is ignored by git (`git check-ignore -v .env`).
   - Do NOT output credentials in shell, logs, or chat.
 - [ ] **Step 6: Verify Sandbox Endpoint Configuration**
-  - Confirm base URL in config points strictly to `https://api-demo.airwallex.com` or `https://api.sandbox.airwallex.com`.
+  - Confirm base URL in config points strictly to officially documented sandbox host (e.g. `https://api.sandbox.airwallex.com`).
   - Confirm production URL `api.airwallex.com` is absent or barred by assertion.
 - [ ] **Step 7: Verify Zero Billing Risk**
   - Confirm all tooling, dependencies, and environments remain at $0.00 cost profile.

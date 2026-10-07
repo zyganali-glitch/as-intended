@@ -6,19 +6,20 @@
 **Official Sources Consulted:**
 - Airwallex Developer Documentation: https://www.airwallex.com/docs
 - Airwallex Authentication API: https://www.airwallex.com/docs/api#/Authentication
-- Airwallex Payouts / Transfers API: https://www.airwallex.com/docs/api#/Payouts
-- Airwallex Sandbox Status Simulation Guide: https://www.airwallex.com/docs/payouts__simulate-transfer-status-transition
 - Airwallex Balances API: https://www.airwallex.com/docs/api#/Balances
+- Airwallex Beneficiaries API: https://www.airwallex.com/docs/api#/Beneficiaries
+- Airwallex Transfers API: https://www.airwallex.com/docs/api#/Transfers
+- Airwallex Simulation API: https://www.airwallex.com/docs/api#/Simulation
+- Airwallex Transfer Status Simulation Guide: https://www.airwallex.com/docs/payouts__simulate-transfer-status-transition
 
 ---
 
 ## 1. Sandbox Architecture & Environment Boundary
 
 ### Sandbox Base URLs
-- **Primary API Sandbox Host:** `https://api-demo.airwallex.com`  
-- **Alternative/Sandbox URL in newer docs:** `https://api.sandbox.airwallex.com`  
-- *Note on Documentation Discrepancy:* Official Airwallex guides alternate between referencing `api-demo.airwallex.com` (historic demo standard) and `api.sandbox.airwallex.com`. In Phase P-01.01/P-01.02, read-only preflight will verify the canonical active endpoint.
-- **Production Base URL:** `https://api.airwallex.com` (STRICTLY FORBIDDEN during hackathon/pre-build).
+- **Current Officially Documented Sandbox Host:** `https://api.sandbox.airwallex.com` (documented standard for developer sandbox API calls).
+- **Historical / Legacy Demo Host:** `https://api-demo.airwallex.com` (referenced in older documentation and legacy integration guides; retained for historical context only, not canonical for V1).
+- **Production Base URL:** `https://api.airwallex.com` (STRICTLY FORBIDDEN during hackathon/pre-build; personal spend ceiling $0.00).
 
 ### Authentication Protocol
 - **Endpoint:** `POST /api/v1/authentication/login`
@@ -54,23 +55,27 @@
 ### Balances Family
 - `GET /api/v1/balances/current` — Query available, pending, and reserved balances across supported currencies. Essential for pre-flight reserve verification before creating economic commitments.
 
-### Global Accounts / Wallet Funding Simulation
-- `POST /api/v1/simulation/global_accounts/simulate_deposit` — Simulates inbound funds into demo wallet accounts without real money movement.
+### Global Account Deposit Simulation (Sandbox Only)
+- `POST /api/v1/simulation/deposit/create` — Simulates inbound funds / deposits into demo global accounts without real money movement.
 
 ### Beneficiaries Family
-- `POST /api/v1/pa/beneficiaries/create` — Create counterparty beneficiary profile binding bank details, country, and entity information.
-- `GET /api/v1/pa/beneficiaries` — Query and list existing beneficiaries.
-- `GET /api/v1/pa/beneficiaries/{id}` — Retrieve counterparty record by ID for authority verification.
+- `POST /api/v1/beneficiaries/create` — Create counterparty beneficiary profile binding bank details, country, and entity information.
+- `GET /api/v1/beneficiaries` — Query and list existing beneficiaries.
+- `GET /api/v1/beneficiaries/{id}` — Retrieve counterparty record by ID for authority verification.
+- `POST /api/v1/beneficiaries/validate` — Validate beneficiary details against scheme/corridor requirements before execution.
+- `POST /api/v1/beneficiary_api_schemas/generate` — Generate required beneficiary schema and validation rules for a specific country and currency combination.
 
 ### Transfers Family
-- `POST /api/v1/pa/transfers/create` — Submits a transfer execution attempt.
+- `POST /api/v1/transfers/create` — Submits a transfer execution attempt.
   - Body parameters: `request_id`, `source_currency`, `transfer_amount`, `beneficiary_id` (or nested `beneficiary`), `payment_method`, `reason`.
-- `GET /api/v1/pa/transfers/{id}` — Primary read-back polling endpoint to obtain current financial state from Airwallex.
-- `GET /api/v1/pa/transfers` with query filters (e.g. `request_id`, `created_at`) — Lookup transfer when provider ID was lost during ambiguous client timeout.
+- `GET /api/v1/transfers/{id}` — Primary read-back polling endpoint to obtain current financial state from Airwallex.
+- `GET /api/v1/transfers` with query filters (e.g. `request_id`, `created_at`) — Lookup transfer when provider ID was lost during ambiguous client timeout (exact filtering behavior to be verified in P-01 live feasibility).
+- `POST /api/v1/transfers/validate` — Validate transfer parameters prior to mutation.
 
 ### Transfer Simulation Family (Sandbox Only)
-- `POST /api/v1/pa/transfers/{id}/simulate_status_transition` (or Transition Transfer Status API)
-  - Parameter: `next_status` (`PROCESSING`, `SENT`, `PAID`, `FAILED`, `CANCELLED`).
+- `POST /api/v1/simulation/transfers/{id}/transition` — Transition transfer status in sandbox.
+  - Parameter: `status` / target transition state (`PROCESSING`, `SENT`, `PAID`, `FAILED`, `CANCELLED`).
+  - In official docs, a transition to `FAILED` may automatically transition or lead to `CANCELLED`.
   - Essential tool for reproducing late settlement rejection in controlled testing.
 
 ### FX Rates / Quotes / Conversions (Deferred / Optional)
@@ -128,8 +133,9 @@ This official provider invariant directly validates the core thesis of **As Inte
 - **Assurance must be revocable.** An application that treats provider HTTP 200 or initial `PAID` status as immutable business completion creates dangerous divergence between accounting records and financial reality.
 
 ### Sandbox Simulation Capabilities
-- The sandbox allows explicit simulation of status transitions using the status simulation endpoint.
+- The sandbox allows explicit simulation of status transitions using the status simulation endpoint: `POST /api/v1/simulation/transfers/{id}/transition`.
 - Supported transition states include `PROCESSING`, `SENT`, `PAID`, `FAILED`, and `CANCELLED`.
+- Official documentation notes that a transition to `FAILED` may automatically transition to `CANCELLED`.
 - This provides the concrete capability to reproduce both ambiguous execution and late revocations under deterministic test conditions.
 
 ---
@@ -153,7 +159,7 @@ The hackathon idea catalog includes "Payment Ops Incident Commander". As Intende
 ## 6. Open Feasibility Gates (Pending Sandbox Live Verification in P-01)
 
 The following items are intentionally **UNRESOLVED** and must NOT be locked during pre-build:
-1. **Canonical Sandbox Host:** Discrepancy between `api-demo.airwallex.com` and `api.sandbox.airwallex.com` to be tested with live ping in P-01.01.
+1. **Canonical Sandbox Host:** Current official documentation supports `https://api.sandbox.airwallex.com` as primary sandbox host; live ping in P-01.01 will verify connectivity (legacy `api-demo.airwallex.com` retained only as historical fallback).
 2. **Demo Corridor & Currency:** Exact currency pair (e.g. USD -> EUR, USD -> SGD, or single-currency transfer) to be selected based on sandbox balance and beneficiary simplicity in P-01.03.
 3. **Beneficiary Schema:** Exact mandatory fields (IBAN vs routing vs SWIFT) dependent on selected corridor in P-01.03.
 4. **Transfer Method:** Local clearing (e.g. SEPA, ACH, FAST) vs SWIFT dependent on corridor feasibility.
