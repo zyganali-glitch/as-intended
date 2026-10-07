@@ -67,14 +67,14 @@
 
 ### Transfers Family
 - `POST /api/v1/transfers/create` — Submits a transfer execution attempt.
-  - Body parameters: `request_id`, `source_currency`, `transfer_amount`, `beneficiary_id` (or nested `beneficiary`), `payment_method`, `reason`.
-- `GET /api/v1/transfers/{id}` — Primary read-back polling endpoint to obtain current financial state from Airwallex.
-- `GET /api/v1/transfers` with query filters (e.g. `request_id`, `created_at`) — Lookup transfer when provider ID was lost during ambiguous client timeout (exact filtering behavior to be verified in P-01 live feasibility).
+  - Body parameters: client-specified `request_id`, `source_currency`, `transfer_amount`, `beneficiary_id` (or nested `beneficiary`), `payment_method`, `reason`.
+- `GET /api/v1/transfers/{id}` — Primary read-back polling endpoint to obtain current financial state from Airwallex when provider transfer ID is known.
+- `GET /api/v1/transfers` — List transfers supporting currently documented query filters (e.g. `from_created_at`, `to_created_at`, `status`, pagination parameters); does not list `request_id` as a verified query filter.
 - `POST /api/v1/transfers/validate` — Validate transfer parameters prior to mutation.
 
 ### Transfer Simulation Family (Sandbox Only)
 - `POST /api/v1/simulation/transfers/{id}/transition` — Transition transfer status in sandbox.
-  - Parameter: `status` / target transition state (`PROCESSING`, `SENT`, `PAID`, `FAILED`, `CANCELLED`).
+  - Documented request parameter: `next_status` (supported simulation states documented as facts: `PROCESSING`, `SENT`, `PAID`, `FAILED`, `CANCELLED`).
   - In official docs, a transition to `FAILED` may automatically transition or lead to `CANCELLED`.
   - Essential tool for reproducing late settlement rejection in controlled testing.
 
@@ -87,13 +87,13 @@
 ## 3. `request_id` Semantics & Economic Exposure Safety
 
 ### Official Airwallex Behavior
-- **Idempotency Field:** `request_id` passed in mutation payload.
-- **Deduplication Window:** Rolling **7 days**.
-- **Duplicate Behavior:** Submitting a transfer with an identical `request_id` within 7 days results in rejection as a duplicate or return of the previously created transfer representation, without double-debiting funds.
-- **Ambiguity Recovery:** When a network disconnect or timeout occurs during `transfers/create`, querying by `request_id` or retrying with the *exact same* `request_id` enables safe re-query.
+- **Client-Specified Field:** `request_id` is client-specified and passed in the transfer mutation payload.
+- **7-Day Duplicate/Deduplication Window:** A `request_id` used within the past 7 days is treated as duplicate.
+- **Duplicate Behavior:** Submitting a transfer with an identical `request_id` within the 7-day duplicate/deduplication window is treated as duplicate to prevent double-debiting funds. Documentation does not guarantee that duplicate handling returns the existing transfer object representation rather than rejecting or not processing the duplicate request.
+- **Ambiguity Recovery:** Airwallex documents that `request_id` can be used to determine the outcome of an uncertain payout creation request. The exact retrieval/recovery mechanism available to this sandbox/API version is intentionally OPEN and must be established in P-01.04 live feasibility before implementation.
 
 ### Why `request_id` is NOT Sufficient for Economic Exposure Safety
-In autonomous agent architectures, provider idempotency alone fails to protect enterprise capital:
+In autonomous agent architectures, provider idempotency does not replace an Economic Exposure Lock (and alone fails to protect enterprise capital):
 1. **New Request ID Vulnerability:** If an agent, timeout handler, or retry loop generates a fresh `request_id` (e.g. UUIDv4 generated on each retry), the provider treats it as an entirely new transaction and executes a double payment.
 2. **Ignorance of Obligation Semantics:** The provider idempotency layer has no awareness of underlying supplier obligations, contractual ceilings, or invoice validity.
 3. **Absence of Reserve Checking:** Idempotency does not ensure the account has reserved funds committed locally to avoid race conditions across concurrent tasks.
@@ -133,8 +133,8 @@ This official provider invariant directly validates the core thesis of **As Inte
 - **Assurance must be revocable.** An application that treats provider HTTP 200 or initial `PAID` status as immutable business completion creates dangerous divergence between accounting records and financial reality.
 
 ### Sandbox Simulation Capabilities
-- The sandbox allows explicit simulation of status transitions using the status simulation endpoint: `POST /api/v1/simulation/transfers/{id}/transition`.
-- Supported transition states include `PROCESSING`, `SENT`, `PAID`, `FAILED`, and `CANCELLED`.
+- The sandbox allows explicit simulation of status transitions using the status simulation endpoint: `POST /api/v1/simulation/transfers/{id}/transition` (via documented request parameter `next_status`).
+- Supported transition states (documented as facts) include `PROCESSING`, `SENT`, `PAID`, `FAILED`, and `CANCELLED`.
 - Official documentation notes that a transition to `FAILED` may automatically transition to `CANCELLED`.
 - This provides the concrete capability to reproduce both ambiguous execution and late revocations under deterministic test conditions.
 
