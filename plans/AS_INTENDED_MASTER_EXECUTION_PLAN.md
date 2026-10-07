@@ -72,7 +72,7 @@ Acceptance:
 - unresolved rule conflict blocks implementation
 
 ## P-00.04 — Official Airwallex feasibility dossier
-**Status:** DONE — awaiting independent QA
+**Status:** DONE — independently PASS
 
 Scope:
 - Research sandbox architecture, base URL, and auth protocol from official Airwallex docs
@@ -84,7 +84,7 @@ Scope:
 - No API calls; no runtime dependencies
 
 ## P-00.05 — Financial threat model
-**Status:** DONE — awaiting independent QA
+**Status:** DONE — independently PASS
 
 Scope:
 - Model 22 financial and operational threat/failure classes
@@ -94,7 +94,7 @@ Scope:
 - No code
 
 ## P-00.06 — Demo evidence & proof plan
-**Status:** DONE — awaiting independent QA
+**Status:** DONE — independently PASS
 
 Scope:
 - Design evidence chains for flagship demo Story A (Ambiguous execution under response loss) and Story B (Revocable assurance under late settlement failure)
@@ -104,7 +104,7 @@ Scope:
 - No code
 
 ## P-00.07 — Sandbox / zero-spend readiness checklist
-**Status:** DONE — awaiting independent QA
+**Status:** DONE — independently PASS
 
 Scope:
 - Define pre-build operator readiness checks (HackerEarth, sandbox readiness, $0 spend boundary)
@@ -114,7 +114,7 @@ Scope:
 - No login or API calls
 
 ## P-00.08 — Pre-build architecture decision register
-**Status:** DONE — awaiting independent QA
+**Status:** DONE — independently PASS
 
 Scope:
 - Record 15 LOCKED non-negotiable architectural and financial decisions

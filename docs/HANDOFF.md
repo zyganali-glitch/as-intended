@@ -36,16 +36,16 @@ Implementation is not authorized yet. PRE-BUILD FREEZE remains ACTIVE.
 - PRE-BUILD FREEZE remains ACTIVE
 - P-00.01 governance bootstrap: DONE / independently PASS
 - P-00.02 independent bootstrap reconciliation: DONE / independently PASS
-- P-00.04 official Airwallex feasibility dossier: DONE (documentation-only research, awaiting independent QA)
-- P-00.05 financial threat model: DONE (documentation-only, awaiting independent QA)
-- P-00.06 demo evidence & proof plan: DONE (documentation-only, awaiting independent QA)
-- P-00.07 prebuild readiness checklist: DONE (documentation-only, awaiting independent QA)
-- P-00.08 prebuild architecture decision register: DONE (documentation-only, awaiting independent QA)
+- P-00.04 official Airwallex feasibility dossier: DONE / independently PASS
+- P-00.05 financial threat model: DONE / independently PASS
+- P-00.06 demo evidence & proof plan: DONE / independently PASS
+- P-00.07 prebuild readiness checklist: DONE / independently PASS
+- P-00.08 prebuild architecture decision register: DONE / independently PASS
 - product implementation remains unauthorized
 
 ## Last independently VERIFIED SHA
 
-`0afad88f7ca61618e5e41127c53141648134480d`
+`62c154e42b74ef6e327d46182b2026a064602c45`
 
 Do not invent or self-advance this value.
 
