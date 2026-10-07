@@ -25,7 +25,7 @@ Branch:
 
 **PRE-BUILD / governance bootstrap**
 
-Implementation is not authorized yet.
+Implementation is not authorized yet. PRE-BUILD FREEZE remains ACTIVE.
 
 ## Current operator-visible status
 
@@ -33,23 +33,28 @@ Implementation is not authorized yet.
 - Idea submission published
 - canonical repository created
 - starter governance pack prepared
-- PRE-BUILD FREEZE active
+- PRE-BUILD FREEZE remains ACTIVE
+- P-00.01 governance bootstrap: DONE / independently PASS
+- P-00.02 independent bootstrap reconciliation: DONE / independently PASS
+- product implementation remains unauthorized
 
 ## Last independently VERIFIED SHA
 
-`UNBORN / TO_BE_ESTABLISHED_AFTER_GOVERNANCE_BOOTSTRAP`
+`8133ebbc234858f58bc9f4f415473a353b6b064a`
 
 Do not invent or self-advance this value.
 
-## Next exact task
+## Next planned phase-changing gate
 
-`P-00.01 — Bootstrap the canonical repository with the approved governance starter pack only; no product implementation code.`
+`P-00.03 — Competition-rule refresh immediately before build authorization`
 
-This task is allowed during PRE-BUILD FREEZE because it contains governance/planning artifacts only.
+- P-00.03 is NOT to be executed now unless separately authorized.
+- PRE-BUILD FREEZE remains ACTIVE; product implementation remains unauthorized.
+- Phase P-01 remains blocked until explicit BUILD UNFREEZE after P-00.03.
 
-## Hard stop after P-00.01
+## Hard stop
 
-After the governance bootstrap commit is independently verified:
+PRE-BUILD FREEZE remains ACTIVE:
 - do not start product implementation
 - remain in PRE-BUILD FREEZE
 - continue only with explicitly authorized pre-build research/planning tasks
@@ -57,10 +62,12 @@ After the governance bootstrap commit is independently verified:
 ## Build authorization gate
 
 Before any implementation task:
-1. independently re-check official competition timing/rules
+1. independently re-check official competition timing/rules (P-00.03)
 2. confirm Build Phase is active
 3. establish exact remote `main` baseline
 4. issue an explicit build-unfreeze decision
+
+Phase P-01 remains blocked until explicit BUILD UNFREEZE after P-00.03.
 
 ## Open feasibility decisions
 

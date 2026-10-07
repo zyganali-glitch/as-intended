@@ -9,7 +9,7 @@ Antigravity must execute only explicitly authorized tasks.
 # PHASE P-00 — Governance Bootstrap & Pre-Build Control
 
 ## P-00.01 — Bootstrap governance spine
-**Status:** READY
+**Status:** DONE — independently PASS
 
 Scope:
 - place approved starter-pack files into canonical repository
@@ -34,7 +34,7 @@ Acceptance:
 Hard stop after this task.
 
 ## P-00.02 — Reconcile canonical bootstrap state
-**Status:** PENDING
+**Status:** DONE — independently PASS
 
 Independent QA only.
 
@@ -75,7 +75,7 @@ Acceptance:
 
 # PHASE P-01 — Airwallex Sandbox Feasibility
 
-Starts only after explicit BUILD UNFREEZE.
+Starts only after explicit BUILD UNFREEZE (blocked while PRE-BUILD FREEZE remains active; P-01 and later implementation phases remain unauthorized).
 
 ## P-01.01 — Establish sandbox access and zero-spend preflight
 Verify:
